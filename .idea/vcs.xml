@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/AK_control" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/allegro_hand_ros" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mini-cheetah-tmotor-python-can" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/spot_ros/spot_ros" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/taio_ws" vcs="Git" />
+  </component>
+</project>

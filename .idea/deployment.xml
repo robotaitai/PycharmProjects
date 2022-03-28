@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="taio@10.70.2.38:22 (2)" deleteMissingItems="true">
+    <serverData>
+      <paths name="taio@10.70.1.133:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/taio/PycharmProjects" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="taio@10.70.2.38:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_407" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="taio@10.70.2.38:22 (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/taio/PycharmProjects" local="$PROJECT_DIR$" />
+            <mapping deploy="" local="" />
+            <mapping />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
