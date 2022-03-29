@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="can_watchdog" type="canWatchdogNode.py" name="can_watchdog"/>
+<!--    <node pkg="joystick_cmd_sim" type="joystickCmdSim.py" name="joystick_cmd_sim"/>-->
+</launch>

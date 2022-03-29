@@ -25,6 +25,9 @@ class MotorWatchdog:
         self.des_pos = 0
         self.act_vel = 0
         self.act_torque = 0
+        self.deceleration = 2
+        self.overshooting = 0
+
 
 
 
@@ -42,7 +45,7 @@ class MotorWatchdog:
             self.act_pos = pos
             self.act_vel = vel
             self.act_torque = curr
-
+        return motor_status
 
     def enable_motor(self):
         self.motor.enable_motor()
@@ -79,11 +82,16 @@ class MotorWatchdog:
 
 
     def check_actual_range(self, actual_position, actual_speed,  actual_torque):
+        self.get_delta_pos_from_hard_stop()
+        self.overshooting = 0
         if actual_position < self.min_position:
+            self.overshooting = 1
             print("OVERSHOOT:Actual Pos: {} is Lower that the min allowed: {} with Velocity of: {}".format(actual_position,
                                                                                                       self.min_position,
                                                                                                          actual_speed))
+
         if actual_position > self.max_position:
+            self.overshooting = 1
             print("OVERSHOOT:Actual Pos: {} is Higher that the min allowed: {} with Velocity of: {}".format(actual_position,
                                                                                                                    self.min_position,
                                                                                                                    actual_speed))
@@ -94,3 +102,11 @@ class MotorWatchdog:
             verbose_print("OVERSHOOT: Actual Effort: {} is Higher that the max allowed: {}".format(actual_torque, self.max_effort))
 
         return actual_position, actual_speed, actual_torque
+
+    def get_delta_pos_from_hard_stop(self):
+        delta = min(abs(self.act_pos-self.min_position),abs(self.act_pos-self.max_position))
+        print(f'min delta from edge: {delta}')
+        return delta
+
+    def is_overshooting(self):
+        return self.overshooting

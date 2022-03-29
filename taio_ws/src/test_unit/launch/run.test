@@ -1,0 +1,6 @@
+<launch>
+<!--    <include file="$(find test_unit)/launch/test.launch"/>-->
+    <node pkg="can_watchdog" type="canWatchdogNode.py" name="can_watchdog"/>
+    <test test-name="runTest" pkg="test_unit"  type="runTest.py" />
+<!--    <node pkg="joystick_cmd_sim" type="joystickCmdSim.py" name="joystick_cmd_sim"/>-->
+</launch>

@@ -16,13 +16,16 @@ import csv, sched
 EXPERIENCE PARAMS
 '''
 EXPERIENCE_NAME = 'chirp_test'
+EXPERIENCE_NAME_MICRO = 'fing_hh_equation'
+EXPERIENCE_NUM = '1'
+
 file_params = EXPERIENCE_NAME.split('_')
 DELTA_T = 0.01
 STEP_VALUE = 0.0005
 """
 MOTORS PARAMS
 """
-kp = KP_VALUE = 500
+kp = KP_VALUE = 100
 # kp = KP_VALUE = float(file_params[2][2:])
 # kd = KD_VALUE = float(file_params[3][2:])
 kd = KD_VALUE = 0.1
@@ -34,7 +37,7 @@ CAN_BUS = 'can0'
 JOINT_PARAMS_PATH = "/home/taio/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
 Joints = {}
 
-
+output_path = f"output/output_{EXPERIENCE_NAME + EXPERIENCE_NAME_MICRO + EXPERIENCE_NUM}_kp_{kp}_kd_{kd}"
 
 """
 ENV PARAMs
@@ -99,6 +102,8 @@ def main():
     log['real_pos']=[]
     log['real_vel']=[]
     log['real_torque']=[]
+    log['hh']=[]
+    log['overshooting']=[]
     i=0
     while i < tot_iter:
         # print("\r\n time: {}".format((time.time()-startTime)))
@@ -110,12 +115,16 @@ def main():
             r_motor_controller_status = r_motor_controller.send_safe_rad_command((des_pos_array[i]), SPEED_VALUE, KP_VALUE, KD_VALUE, TORQUE_VALUE)
             if r_motor_controller_status != None:
                 mot_id, pos, vel, curr = r_motor_controller_status
-                print("final position: {}".format(math.degrees(pos)))
+                print("final position: {}\n".format(math.degrees(pos)))
+                print("final position: {}\n".format(math.degrees(pos)))
+                print("final position: {}\n".format(math.degrees(pos)))
+
 
                 log['real_pos'].append(pos)
                 log['real_vel'].append(vel)
                 log['real_torque'].append(curr)
-
+                log['hh'].append(r_motor_controller.get_delta_pos_from_hard_stop())
+                log['overshooting'].append(r_motor_controller.overshooting)
             time.sleep(DELTA_T)
 
             # output_data.append([float(data['dof_target'][i]), float(data['dof_pos'][i]), float(data['dof_vel'][i]), float(data['torque_action'][i]), pos, vel, curr])
@@ -128,17 +137,16 @@ def main():
     """
     Save Json
     """
-    # with open('output_'+ EXPERIENCE_NAME+'.json', 'w') as outfile:
-    #     json.dump(log, outfile)
+    with open(output_path+'.json', 'w') as outfile:
+        json.dump(log, outfile)
 
+    print("JSON saved")
 
     """
     Create new CSV
     """
     Header = ['Desired Potision', 'Sim Position', 'Sim Velocity', 'Sim Torque', 'Real Position', 'Real Velocity',
-              'Real Torque']
-    output_path = f"output/output_{EXPERIENCE_NAME}_kp_{kp}_kd_{kd}"
-    print("JSON saved")
+              'Real Torque','hh','overshooting']
 
     with open(output_path+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)

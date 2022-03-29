@@ -1,0 +1,6 @@
+<launch>
+    <node name = "joystick_sim" pkg="joystick_cmd_sim" type="joystickCmdSim.py" output="screen"></node>
+    <!-- joy node -->
+   <node  name="joystick" pkg="joy" type="joy_node" ></node>
+<!--   <param name="dev" type="string" value="/dev/input/js0" /> </node>-->
+</launch>

@@ -1,0 +1,4 @@
+<launch>
+<!--    <node name = "can_bus_setup" pkg="motors_abstraction" type="setup_can_interface.sh"></node>-->
+    <node pkg="motors_abstraction" name = "motors_abstraction"  type="motorAbstraction.py" output="screen"></node>
+</launch>

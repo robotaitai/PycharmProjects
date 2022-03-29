@@ -1,0 +1,64 @@
+left-knee:
+  name: "left-knee"
+  min_position: 0.0
+  max_position: 1.9
+  max_velocity: 1
+  max_effort: 25
+  can_id: 0x09
+  motor_type: 'AK80_9_V2'
+
+right-knee:
+  name: "right-knee"
+  min_position: 0.0
+  max_position: 1.9
+  max_velocity: 1
+  max_effort: 26
+  can_id: 0x08
+  motor_type: 'AK80_9_V2'
+
+left-ankle-roll:
+  name: "left-ankle-roll"
+  min_position: -0.61
+  max_position: 0.61
+  max_velocity: 1
+  max_effort: 26
+  can_id: 0x03
+  motor_type: 'AK80_64_V2'
+
+right-ankle-roll:
+  name: "right-ankle-roll"
+  min_position: -0.61
+  max_position: 0.61
+  max_velocity: 1
+  max_effort: 26
+  can_id: 0x07
+  motor_type: 'AK80_9_V2'
+
+left-hip-roll:
+  name: "left-hip-roll"
+  min_position: -0.2
+  max_position: 0.52
+  max_velocity: 1
+  max_effort: 26
+  can_id: 0x06
+  motor_type: 'AK80_9_V2'
+
+right-hip-roll:
+  name: "right-hip-roll"
+  min_position: -0.2
+  max_position: 0.52
+  max_velocity: 1
+  max_effort: 26
+  can_id: 0x04
+  motor_type: 'AK80_9_V2'
+
+
+logitech_controller:
+  name: "controller"
+  min_position: 0
+  max_position: 0
+  max_velocity: 1
+  max_effort: 0
+  can_id: 0x20
+  motor_type: 'Logitech'
+
