@@ -6,7 +6,7 @@ import rospy
 import yaml, time
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String, Header
-im
+from dataclasses import dataclass
 import canMotorController as mot_con
 import numpy as np
 
@@ -31,26 +31,68 @@ if verbose:
 else:
     verboseprint = lambda *a: None  # do-nothing function
 
+@dataclass
+class CanParams:
+    can_id: hex
+    can_socket: str
+
+@dataclass
+class MotorLimits:
+    min_pos: float
+    max_pos: float
+    max_vel: float
+    max_torque: float
+
+@dataclass
+class MotorStatus:
+    act_pos: float
+    act_vel: float
+    act_torque: float
+
+    des_pos: float
+    mot_id: hex
+
+    def update_status(self, new_pos, new_vel, new_torque):
+        self.act_pos = new_pos
+        self.act_vel = new_vel
+        self.act_torque = new_torque
+
+
+    def update_from_motor(self,status):
+        self.mot_id, self.act_pos, self.act_vel ,self.act_torque = status
+
+
+@dataclass
+class RosParams:
+    subscribing_to: str
+    publishing_as: str
+    publishing_err: str
+    # publisher : rospy.Publisher(publishing_as, JointState, queue_size=10)
+    # error_publisher : rospy.Publisher(publishing_err, String, queue_size=10)
+
 
 class motor_abstractor:
 
     def __init__(self, parsed_joint_params, joint, new_angle=0):
         self.joint_name = joint
-        self.can_id = parsed_joint_params[joint]['can_id']
+        self.can_params = CanParams(parsed_joint_params[joint]['can_id'],parsed_joint_params[joint]['can_socket'])
+
+        # self.can_id = parsed_joint_params[joint]['can_id']
         self.motor_type = parsed_joint_params[joint]['motor_type']
-        self.motor_controller = mot_con.CanMotorController(CAN_BUS, self.can_id, self.motor_type)
-        self.subscribing_to = '/soma/' + joint + "/limited"
-        self.publishing_as = "/motors/" + joint + "/status"
-        self.publishing_err = "/motors/" + joint + "/error"
+        self.motor_controller = mot_con.CanMotorController(self.can_params.can_socket, self.can_params.can_id, self.motor_type)
 
-        self.publisher = rospy.Publisher(self.publishing_as, JointState, queue_size=10)
-        self.error_publisher = rospy.Publisher(self.publishing_err, String, queue_size=10)
+        self.ros_params = RosParams("/soma/" + joint + "/limited", "/motors/" + joint + "/status", "/motors/" + joint + "/error")
+        # self.subscribing_to = '/soma/' + joint + "/limited"
+        # self.publishing_as = "/motors/" + joint + "/status"
+        # self.publishing_err = "/motors/" + joint + "/error"
 
-        self.subscriber = rospy.Subscriber(self.subscribing_to, JointState, self.update_desired_angle)
+        self.publisher = rospy.Publisher(self.ros_params.publishing_as, JointState, queue_size=10)
+        self.error_publisher = rospy.Publisher(self.ros_params.publishing_err, String, queue_size=10)
+        self.subscriber = rospy.Subscriber(self.ros_params.subscribing_to, JointState, self.update_desired_angle)
         self.des_angle = new_angle
         print("Created new Motor for: {} CAN ID: {} Subs to: {} and Pubs to: {}".format(self.joint_name, self.can_id,
-                                                                                        self.subscribing_to,
-                                                                                        self.publishing_as))
+                                                                                        self.ros_params.subscribing_to,
+                                                                                        self.ros_params.publishing_as))
 
     def send_position_and_update_status_demo(self, desired_position):
         '''
@@ -59,7 +101,7 @@ class motor_abstractor:
         '''
         verboseprint(
             "{} Sending pos: {} to Motor: {}".format(round(time.time() * 1000), desired_position, self.joint_name))
-        can_id, pos, vel, curr = self.can_id, desired_position, desired_position, desired_position
+        can_id, pos, vel, curr = self.can_params.can_id, desired_position, desired_position, desired_position
         # TODO check if ID is correct
         new_status = JointState()
         new_status.header = Header()
@@ -108,6 +150,7 @@ class motor_abstractor:
         self.des_angle = msg.position[0]
 
 
+
 class motors_handler:
 
     def __init__(self, joint_params):
@@ -124,6 +167,7 @@ class motors_handler:
             rospy.sleep(0.0001)
 
     #TODO add
+
 
 
 if __name__ == '__main__':

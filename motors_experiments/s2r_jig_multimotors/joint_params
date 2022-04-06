@@ -1,0 +1,59 @@
+left-ankle-roll:
+  name: "left-ankle-roll"
+  min_position: -1
+  max_position: 1
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x1
+  can_socket: 'can7'
+  motor_type: 'AK60_6_V2'
+
+left-knee:
+  name: "left-knee"
+  min_position: -1
+  max_position: 1
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x08
+  can_socket: 'can7'
+  motor_type: 'AK80_64_V3'
+
+left-ankle-pitch:
+  name: "left-ankle-pitch"
+  min_position: -0.5
+  max_position: 0.5
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x06
+  can_socket: 'can7'
+  motor_type: 'AK80_64_V3'
+
+left-hip-yaw:
+  name: "left-hip-yaw"
+  min_position: -1
+  max_position: 1
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x0f
+  can_socket: 'can5'
+  motor_type: 'AK70_10'
+
+left-hip-roll:
+  name: "left-hip-roll"
+  min_position: -1
+  max_position: 1
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x0f
+  can_socket: 'can5'
+  motor_type: 'AK70_10'
+
+left-hip-pitch:
+  name: "left-hip-pitch"
+  min_position: -0.5
+  max_position: 1.3
+  max_velocity: 6
+  max_effort: 26
+  can_id: 0x03
+  can_socket: 'can5'
+  motor_type: 'AK80_64_V3'

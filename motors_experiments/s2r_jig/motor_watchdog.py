@@ -1,3 +1,5 @@
+import math
+
 from taio_ws.src.motors_abstraction.src import canMotorController as mot_con
 
 VERBOSE = True
@@ -25,8 +27,11 @@ class MotorWatchdog:
         self.des_pos = 0
         self.act_vel = 0
         self.act_torque = 0
-        self.deceleration = 2
+        self.deceleration = 60
         self.overshooting = 0
+        self.danger_velocity_zone = 0
+        self.max_velocity_allowed = 0
+        self.delta_from_ss = 0.0
 
 
 
@@ -37,7 +42,7 @@ class MotorWatchdog:
         motor_status = self.motor.send_rad_command(safe_desired_position, safe_desired_speed, KP_VALUE, KD_VALUE, safe_desired_torque)
 
         if motor_status == None:
-            self.error_publisher.publish("TIMEOUT EXCEPTION: Got NONE message from motor")
+            print("TIMEOUT EXCEPTION: Got NONE message from motor")
 
         else:
             motor_id, pos, vel, curr = motor_status
@@ -45,6 +50,8 @@ class MotorWatchdog:
             self.act_pos = pos
             self.act_vel = vel
             self.act_torque = curr
+            self.update_delta_pos_from_hard_stop()
+
         return motor_status
 
     def enable_motor(self):
@@ -55,6 +62,7 @@ class MotorWatchdog:
 
 
     def check_desired_range(self, desired_position, desired_speed,  desired_torque):
+
         if desired_position < self.min_position:
             verbose_print(
                 "CAN Watchdog Alert for: {} Desired Pos: {} is Lower that the min allowed: {}".format(self.motor_name,
@@ -82,8 +90,17 @@ class MotorWatchdog:
 
 
     def check_actual_range(self, actual_position, actual_speed,  actual_torque):
-        self.get_delta_pos_from_hard_stop()
+
         self.overshooting = 0
+        self.danger_velocity_zone = 0
+
+        max_vel = math.sqrt(self.delta_from_ss*2*self.deceleration)
+        self.max_velocity_allowed = max_vel
+        # print(f'Velocity is: {actual_speed} allowed speed: {max_vel}')
+        if abs(actual_speed) > max_vel:
+            self.danger_velocity_zone = 1
+            print(f"DANGER SPEED ZONE: max_vel: {max_vel}, actual vel: {actual_speed} and the distance: {self.delta_from_ss}")
+
         if actual_position < self.min_position:
             self.overshooting = 1
             print("OVERSHOOT:Actual Pos: {} is Lower that the min allowed: {} with Velocity of: {}".format(actual_position,
@@ -103,10 +120,13 @@ class MotorWatchdog:
 
         return actual_position, actual_speed, actual_torque
 
-    def get_delta_pos_from_hard_stop(self):
-        delta = min(abs(self.act_pos-self.min_position),abs(self.act_pos-self.max_position))
-        print(f'min delta from edge: {delta}')
-        return delta
+    def update_delta_pos_from_hard_stop(self):
+        self.delta_from_ss = min([abs(self.act_pos-self.min_position) ,abs(self.act_pos-self.max_position)])
+        # print(f'min delta from edge: {self.delta_from_ss}')
+        # if self.act_vel > 0:
+        #     self.delta_from_ss = self.max_position - self.act_pos
+        # else:
+        #     self.delta_from_ss = self.act_pos - self.min_position
 
     def is_overshooting(self):
         return self.overshooting

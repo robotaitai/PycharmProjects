@@ -13,7 +13,7 @@ dt_sleep = 0.0001  # Time before motor sends a reply
 msg_time_out = 0.01
 
 VERBOSE = False
-
+# SOCKET_ID = 'can5'
 if VERBOSE:
     def verbose_print(args):
         # Print each argument separately so caller doesn't need to
@@ -34,8 +34,9 @@ class CanMotorController():
 
     can_socket_declared = False
     motor_socket = None
+    can_sockets = {}
 
-    def __init__(self, can_socket='can0', motor_id=0x01, motor_type='AK80_6_V1p1', socket_timeout=0.05):
+    def __init__(self, can_socket, motor_id, motor_type, socket_timeout=0.05):
         """
         Instantiate the class with socket name, motor ID, and socket timeout.
         Sets up the socket communication for rest of the functions.
@@ -55,13 +56,21 @@ class CanMotorController():
             self.motorParams = motorsParams.AK80_9_V2_PARAMS
         elif motor_type == 'AK80_64_V2':
             self.motorParams = motorsParams.AK80_64_V2_PARAMS
+        elif motor_type == 'AK80_64_V3':
+            self.motorParams = motorsParams.AK80_64_V3_PARAMS
+        elif motor_type == 'AK70_10':
+            self.motorParams = motorsParams.AK70_10_PARAMS
         # print(self.motorParams)
         # can_socket = (can_socket,)
         self.motor_id = motor_id
+        self.can_socket = can_socket
         # create a raw socket and bind it to the given CAN interface
-        if not CanMotorController.can_socket_declared:
+        # if not CanMotorController.can_socket_declared:
+        if self.can_socket not in CanMotorController.can_sockets:
             try:
-                CanMotorController.motor_socket =  can.interface.Bus(channel='can0', bustype='socketcan_native')
+                # CanMotorController.motor_socket =  can.interface.Bus(channel=self.can_socket, bustype='socketcan_native')
+                CanMotorController.can_sockets[self.can_socket] =  can.interface.Bus(channel=self.can_socket, bustype='socketcan_native')
+
                 # CanMotorController.motor_socket.flush_tx_buffer()
 
                 # CanMotorController.motor_socket.bind(can_socket)
@@ -90,7 +99,7 @@ class CanMotorController():
         # print(CanMotorController.motor_socket.property)
         # CanMotorController.motor_socket.flush_tx_buffer()
         # print(CanMotorController.motor_socket.property)
-        CanMotorController.motor_socket.shutdown()
+        CanMotorController.can_sockets[self.can_socket].shutdown()
         # print(CanMotorController.motor_socket.property)
 
 
@@ -104,7 +113,8 @@ class CanMotorController():
 
         try:
             # CanMotorController.motor_socket.send(can_msg)
-            CanMotorController.motor_socket.send(msg,timeout=msg_time_out)
+            # CanMotorController.motor_socket.send(msg,timeout=msg_time_out)
+            CanMotorController.can_sockets[self.can_socket].send(msg,timeout=msg_time_out)
             verbose_print(msg)
         except Exception as e:
             print("Unable to Send CAN Frame.")
@@ -115,7 +125,8 @@ class CanMotorController():
         Recieve a CAN frame and unpack it. Returns can_id, can_dlc (data length), data (in bytes)
         """
         try:
-            message = CanMotorController.motor_socket.recv(timeout=timeout)  # Wait until a message is received.
+            # message = CanMotorController.motor_socket.recv(timeout=timeout)  # Wait until a message is received.
+            message = CanMotorController.can_sockets[self.can_socket].recv(timeout=timeout)  # Wait until a message is received.
             if message == None:
                 verbose_print("\r\n No message received, pass..")
                 return message

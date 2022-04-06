@@ -8,9 +8,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 '''
-EXPERIENCE PARAMS
+EXPERIENCE PARAMS   
 '''
 EXPERIENCE_NAME = 'output_chirp_test_kp_100_kd_0.1'
+EXPERIENCE_NAME_MICRO = 'fing_hh_equation'
+EXPERIENCE_NUM = '1'
 file_params = EXPERIENCE_NAME.split('_')
 DELTA_T = 0.01
 STEP_VALUE = 0.0005
@@ -21,7 +23,7 @@ kp = KP_VALUE = 100
 # kd = KD_VALUE = float(file_params[3][2:])
 kd = KD_VALUE = 0.5
 
-output_path = f"output/output_{EXPERIENCE_NAME}_kp_{kp}_kd_{kd}"
+output_path = f"output/output_{EXPERIENCE_NAME + EXPERIENCE_NAME_MICRO + EXPERIENCE_NUM}_kp_{kp}_kd_{kd}"
 
 f = open('/Users/taio/PycharmProjects/motors_experiments/s2r_jig/'+output_path+'.json')
 log = json.load(f)

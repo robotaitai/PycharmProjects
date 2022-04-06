@@ -4,7 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/exp_plotter/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Remote Python 3.6.9 (sftp://taio@10.70.2.38:22/usr/bin/python3.6)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

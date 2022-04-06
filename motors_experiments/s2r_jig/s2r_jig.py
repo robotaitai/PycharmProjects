@@ -9,36 +9,38 @@ import matplotlib.pyplot as plt
 import yaml, json
 from taio_ws.src.motors_abstraction.src import canMotorController as mot_con
 import motor_watchdog as new_mot
+import Jetson.GPIO as GPIO
 
 import csv, sched
 
 '''
 EXPERIENCE PARAMS
 '''
-EXPERIENCE_NAME = 'chirp_test'
-EXPERIENCE_NAME_MICRO = 'fing_hh_equation'
-EXPERIENCE_NUM = '1'
-
+EXPERIENCE_NAME = 'full_test_a'
+EXPERIENCE_NAME_MICRO = '_delete_'
+EXPERIENCE_NUM = '2'
 file_params = EXPERIENCE_NAME.split('_')
+
 DELTA_T = 0.01
-STEP_VALUE = 0.0005
+STEP_VALUE = 0.025
 """
 MOTORS PARAMS
 """
-kp = KP_VALUE = 100
+kp = KP_VALUE = 10
+kd = KD_VALUE = 1.0
+
 # kp = KP_VALUE = float(file_params[2][2:])
 # kd = KD_VALUE = float(file_params[3][2:])
-kd = KD_VALUE = 0.1
 SPEED_VALUE = 6
 TORQUE_VALUE = 0
-r_motor_id = 0x03
+r_motor_id = '007'
 MOTOR_TYPE = 'AK80_64_V2'
 CAN_BUS = 'can0'
-JOINT_PARAMS_PATH = "/home/taio/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
+JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
 Joints = {}
 
-output_path = f"output/output_{EXPERIENCE_NAME + EXPERIENCE_NAME_MICRO + EXPERIENCE_NUM}_kp_{kp}_kd_{kd}"
-
+output_path = f"/mnt/nvme0n1p1/PycharmProjects/motors_experiments/s2r_jig/output/output_{EXPERIENCE_NAME + EXPERIENCE_NAME_MICRO + EXPERIENCE_NUM}_kp_{kp}_kd_{kd}"
+print(output_path)
 """
 ENV PARAMs
 """
@@ -49,7 +51,7 @@ JOINT_PARAMS_PATH = "motor_params"
 
 f = open('files/'+EXPERIENCE_NAME+'.json')
 data = json.load(f)
-data = data['exp_0_0']
+data = data['exp_0']
 j = 0
 tot_iter = len(data['dof_target'])
 
@@ -95,42 +97,53 @@ def main():
     des_pos_array = data['dof_target']
     output_data =[]
     log={}
-    log['dof_target'] = data['dof_target'][:tot_iter]
-    log['dof_pos'] = data['dof_pos'][:tot_iter]
-    log['dof_vel'] = data['dof_vel'][:tot_iter]
-    log['torque_action'] = data['torque_action'][:tot_iter]
+    log['dof_target'] = []
+    log['dof_pos'] = []
+    log['dof_vel'] = []
+    log['torque_action'] = []
     log['real_pos']=[]
     log['real_vel']=[]
     log['real_torque']=[]
     log['hh']=[]
     log['overshooting']=[]
+    log['danger_vel']=[]
     i=0
     while i < tot_iter:
         # print("\r\n time: {}".format((time.time()-startTime)))
+
         # print("\r\n time: {}".format(time.time()))
         if (time.time()-startTime) >= STEP_VALUE:
             # print(des_pos[i])
-            print("-----------------------------------------------------------------------")
+            # print("-----------------------------------------------------------------------")
             # pos, vel, curr = r_motor_controller.enable_motor()
-            r_motor_controller_status = r_motor_controller.send_safe_rad_command((des_pos_array[i]), SPEED_VALUE, KP_VALUE, KD_VALUE, TORQUE_VALUE)
+            # if r_motor_controller.danger_velocity_zone:
+            #     r_motor_controller_status = r_motor_controller.send_safe_rad_command(0, -1 * r_motor_controller.max_velocity_allowed, 0, 5, TORQUE_VALUE)
+            # else:
+            #     r_motor_controller_status = r_motor_controller.send_safe_rad_command((des_pos_array[i]), SPEED_VALUE, KP_VALUE, KD_VALUE, TORQUE_VALUE)
+            r_motor_controller_status = r_motor_controller.send_safe_rad_command((des_pos_array[i]), SPEED_VALUE,
+                                                                                 KP_VALUE, KD_VALUE, TORQUE_VALUE)
             if r_motor_controller_status != None:
                 mot_id, pos, vel, curr = r_motor_controller_status
-                print("final position: {}\n".format(math.degrees(pos)))
-                print("final position: {}\n".format(math.degrees(pos)))
-                print("final position: {}\n".format(math.degrees(pos)))
+                # print("final position: {}\n".format(math.degrees(pos)))
+                # print("final position: {}\n".format(math.degrees(pos)))
+                # print("final position: {}\n".format(math.degrees(pos)))
 
-
+                log['dof_target'].append(data['dof_target'][i])
+                log['dof_pos'].append(data['dof_pos'][i])
+                log['dof_vel'].append(data['dof_vel'][i])
+                log['torque_action'].append(data['torque_action'][i])
                 log['real_pos'].append(pos)
                 log['real_vel'].append(vel)
                 log['real_torque'].append(curr)
-                log['hh'].append(r_motor_controller.get_delta_pos_from_hard_stop())
+                log['hh'].append(r_motor_controller.delta_from_ss)
                 log['overshooting'].append(r_motor_controller.overshooting)
+                log['danger_vel'].append(r_motor_controller.danger_velocity_zone)
             time.sleep(DELTA_T)
 
             # output_data.append([float(data['dof_target'][i]), float(data['dof_pos'][i]), float(data['dof_vel'][i]), float(data['torque_action'][i]), pos, vel, curr])
             startTime = time.time()
-            i+=1
-            print("iteration: {} out of; {}".format(i,tot_iter))
+            i+=5
+            # print("iteration: {} out of; {}".format(i,tot_iter))
 
     status = r_motor_controller.disable_motor()
 
@@ -146,7 +159,7 @@ def main():
     Create new CSV
     """
     Header = ['Desired Potision', 'Sim Position', 'Sim Velocity', 'Sim Torque', 'Real Position', 'Real Velocity',
-              'Real Torque','hh','overshooting']
+              'Real Torque','hh','overshooting','danger_vel']
 
     with open(output_path+'.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
