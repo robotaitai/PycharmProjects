@@ -16,8 +16,8 @@ SPEED_VALUE = 0
 TORQUE_VALUE = 0
 INIT_ANGLE = 0
 CAN_BUS = 'can0'
-verbose = False
-JOINT_PARAMS_PATH = "/home/taio/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
+verbose = True
+JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
 
 # pub_error = rospy.Publisher("/soma/watchdog_error", String, queue_size=10)
 COMM_FREQ = 40  # Hz
@@ -71,14 +71,18 @@ class RosParams:
     # error_publisher : rospy.Publisher(publishing_err, String, queue_size=10)
 
 
+
 class motor_abstractor:
 
     def __init__(self, parsed_joint_params, joint, new_angle=0):
         self.joint_name = joint
+        # self.motor_name = parsed_joint_params['name']
         self.can_params = CanParams(parsed_joint_params[joint]['can_id'],parsed_joint_params[joint]['can_socket'])
+        self.motor_status = MotorStatus(0,0,0,0,self.can_params.can_id)
 
         # self.can_id = parsed_joint_params[joint]['can_id']
         self.motor_type = parsed_joint_params[joint]['motor_type']
+        # self.motor_controller = mot_con.CanMotorController(self.can_params.can_socket, self.can_params.can_id, self.motor_type)
         self.motor_controller = mot_con.CanMotorController(self.can_params.can_socket, self.can_params.can_id, self.motor_type)
 
         self.ros_params = RosParams("/soma/" + joint + "/limited", "/motors/" + joint + "/status", "/motors/" + joint + "/error")
@@ -90,48 +94,53 @@ class motor_abstractor:
         self.error_publisher = rospy.Publisher(self.ros_params.publishing_err, String, queue_size=10)
         self.subscriber = rospy.Subscriber(self.ros_params.subscribing_to, JointState, self.update_desired_angle)
         self.des_angle = new_angle
-        print("Created new Motor for: {} CAN ID: {} Subs to: {} and Pubs to: {}".format(self.joint_name, self.can_id,
+        print("Created new Motor for: {} CAN ID: {} Subs to: {} and Pubs to: {}".format(self.joint_name, self.can_params.can_id,
                                                                                         self.ros_params.subscribing_to,
                                                                                         self.ros_params.publishing_as))
 
-    def send_position_and_update_status_demo(self, desired_position):
-        '''
-        Send desired position over can
-        and update the received status
-        '''
-        verboseprint(
-            "{} Sending pos: {} to Motor: {}".format(round(time.time() * 1000), desired_position, self.joint_name))
-        can_id, pos, vel, curr = self.can_params.can_id, desired_position, desired_position, desired_position
-        # TODO check if ID is correct
-        new_status = JointState()
-        new_status.header = Header()
-        new_status.header.stamp = rospy.Time.now()
-        new_status.name = self.joint_name + '/status'
-        new_status.position.append(pos)
-        new_status.velocity.append(vel)
-        new_status.effort.append(curr)
-        self.publisher.publish(new_status)
+    # def send_position_and_update_status_demo(self, desired_position, SPEED_VALUE =0, KP_VALUE=100, KD_VALUE=0.1, TORQUE_VALUE=0):
+    #     '''
+    #     Send desired position over can
+    #     and update the received status
+    #     '''
+    #     verboseprint(
+    #         "{} Sending pos: {} to Motor: {}".format(round(time.time() * 1000), desired_position, self.joint_name))
+    #     can_id, pos, vel, curr = self.can_params.can_id, desired_position, desired_position, desired_position
+    #     # TODO check if ID is correct
+    #     new_status = self.motor.send_rad_command(desired_position, safe_desired_speed, KP_VALUE, KD_VALUE, safe_desired_torque)
+    #
+    #     new_status = JointState()
+    #     new_status.header = Header()
+    #     new_status.header.stamp = rospy.Time.now()
+    #     new_status.name = self.joint_name + '/status'
+    #     new_status.position.append(pos)
+    #     new_status.velocity.append(vel)
+    #     new_status.effort.append(curr)
+    #     self.publisher.publish(new_status)
 
-    def send_position_and_update_status(self, desired_position):
+    def send_position_and_update_status(self, desired_position, SPEED_VALUE =0, KP_VALUE=100, KD_VALUE=0.1, TORQUE_VALUE=0):
         '''
         Send desired position over can
         and update the received status
         '''
-        motor_status = self.motor_controller.send_rad_command(desired_position, SPEED_VALUE, KP_VALUE, KD_VALUE,
+        new_status = self.motor_controller.send_rad_command(desired_position, SPEED_VALUE, KP_VALUE, KD_VALUE,
                                                               TORQUE_VALUE)
-        if motor_status == None:
+        if new_status == None:
             self.error_publisher.publish("TIMEOUT EXCEPTION: Got NONE message from motor")
         else:
-            motor_id, pos, vel, curr = motor_status
+            self.motor_status.update_from_motor(new_status)
+
+            # motor_id, pos, vel, curr = motor_status
             # TODO check if ID is correct
-            new_status = JointState()
-            new_status.header = Header()
-            new_status.header.stamp = rospy.Time.now()
-            new_status.name = self.joint_name + '/status'
-            new_status.position.append(pos)
-            new_status.velocity.append(vel)
-            new_status.effort.append(curr)
-            self.publisher.publish(new_status)
+            motor_status = JointState()
+            motor_status.header = Header()
+            motor_status.header.stamp = rospy.Time.now()
+            motor_status.name = self.joint_name + '/status'
+            motor_status.position.append(self.motor_status.act_pos)
+            motor_status.velocity.append(self.motor_status.act_vel)
+            motor_status.effort.append(self.motor_status.act_torque)
+            self.publisher.publish(motor_status)
+            return 1
 
     def motor_init(self):
         can_id, pos, vel, curr = self.motor_controller.enable_motor()
@@ -149,6 +158,9 @@ class motor_abstractor:
     def update_desired_angle(self, msg):
         self.des_angle = msg.position[0]
 
+    def update_from_motor(self,status):
+        self.mot_id, self.act_pos, self.act_vel ,self.act_torque = status
+
 
 
 class motors_handler:
@@ -163,7 +175,7 @@ class motors_handler:
 
     def publish_all_motors(self, event=None):
         for joint in self.joints:
-            joint.send_position_and_update_status_demo(joint.des_angle)  # TODO Demo
+            joint.send_position_and_update_status(joint.des_angle)  # TODO Demo
             rospy.sleep(0.0001)
 
     #TODO add

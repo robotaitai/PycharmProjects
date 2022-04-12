@@ -1,12 +1,4 @@
-left-ankle-roll:
-  name: "left-ankle-roll"
-  min_position: -1
-  max_position: 1
-  max_velocity: 6
-  max_effort: 26
-  can_id: 0x1
-  can_socket: 'can7'
-  motor_type: 'AK60_6_V2'
+
 
 left-knee:
   name: "left-knee"
@@ -16,7 +8,7 @@ left-knee:
   max_effort: 26
   can_id: 0x08
   can_socket: 'can7'
-  motor_type: 'AK80_64_V3'
+  motor_type: 'AK80_64_V2'
 
 left-ankle-pitch:
   name: "left-ankle-pitch"
@@ -34,7 +26,7 @@ left-hip-yaw:
   max_position: 1
   max_velocity: 6
   max_effort: 26
-  can_id: 0x0f
+  can_id: 0x05
   can_socket: 'can5'
   motor_type: 'AK70_10'
 
@@ -44,7 +36,7 @@ left-hip-roll:
   max_position: 1
   max_velocity: 6
   max_effort: 26
-  can_id: 0x0f
+  can_id: 0x07
   can_socket: 'can5'
   motor_type: 'AK70_10'
 
@@ -57,3 +49,13 @@ left-hip-pitch:
   can_id: 0x03
   can_socket: 'can5'
   motor_type: 'AK80_64_V3'
+
+logitech_controller:
+  name: "controller"
+  min_position: 0
+  max_position: 0
+  max_velocity: 1
+  max_effort: 0
+  can_id: 0x20
+  motor_type: 'Logitech'
+

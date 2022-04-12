@@ -1,8 +1,7 @@
-import can
+import can, math
 # from src.motors_abstraction.src import utils
-from taio_ws.src.motors_abstractor.src.utilities import utils
-from .utilities import motorsParams
-import math
+from utilities import utils
+import MotorsParams
 from bitstring import BitArray
 
 
@@ -34,7 +33,6 @@ class CanMotorController():
     # multiple instances and check if the socket was declared earlier by an instance.
 
     can_socket_declared = False
-    motor_socket = None
     can_sockets = {}
 
     def __init__(self, can_socket, motor_id, motor_type, socket_timeout=0.05):
@@ -42,25 +40,25 @@ class CanMotorController():
         Instantiate the class with socket name, motor ID, and socket timeout.
         Sets up the socket communication for rest of the functions.
         """
-        self.motorParams = motorsParams.AK80_64_V2_PARAMS  # default choice
+        self.motorParams = MotorsParams.AK80_64_V2_PARAMS  # default choice
         print('Using Motor Type: {}'.format(motor_type))
-        assert motor_type in motorsParams.legitimate_motors, 'Motor Type not in list of accepted motors.'
+        assert motor_type in MotorsParams.legitimate_motors, 'Motor Type not in list of accepted motors.'
         if motor_type == 'AK80_6_V1':
-            self.motorParams = motorsParams.AK80_6_V1_PARAMS
+            self.motorParams = MotorsParams.AK80_6_V1_PARAMS
         elif motor_type == 'AK80_6_V1p1':
-            self.motorParams = motorsParams.AK80_6_V1p1_PARAMS
+            self.motorParams = MotorsParams.AK80_6_V1p1_PARAMS
         elif motor_type == 'AK80_6_V2':
-            self.motorParams = motorsParams.AK80_6_V2_PARAMS
+            self.motorParams = MotorsParams.AK80_6_V2_PARAMS
         elif motor_type == 'AK80_9_V1p1':
-            self.motorParams = motorsParams.AK80_9_V1p1_PARAMS
+            self.motorParams = MotorsParams.AK80_9_V1p1_PARAMS
         elif motor_type == 'AK80_9_V2':
-            self.motorParams = motorsParams.AK80_9_V2_PARAMS
+            self.motorParams = MotorsParams.AK80_9_V2_PARAMS
         elif motor_type == 'AK80_64_V2':
-            self.motorParams = motorsParams.AK80_64_V2_PARAMS
+            self.motorParams = MotorsParams.AK80_64_V2_PARAMS
         elif motor_type == 'AK80_64_V3':
-            self.motorParams = motorsParams.AK80_64_V3_PARAMS
+            self.motorParams = MotorsParams.AK80_64_V3_PARAMS
         elif motor_type == 'AK70_10':
-            self.motorParams = motorsParams.AK70_10_PARAMS
+            self.motorParams = MotorsParams.AK70_10_PARAMS
         # print(self.motorParams)
         # can_socket = (can_socket,)
         self.motor_id = motor_id
@@ -76,10 +74,10 @@ class CanMotorController():
 
                 # CanMotorController.motor_socket.bind(can_socket)
                 # CanMotorController.motor_socket.settimeout(socket_timeout)
-                print("Bound to: ", can_socket)
-                CanMotorController.can_socket_declared = True
+                print("Bound to: ", self.can_socket)
+                # CanMotorController.can_socket_declared = True
             except Exception as e:
-                print("Unable to Connect to Socket Specified: ", can_socket)
+                print("Unable to Connect to Socket Specified: ", self.can_socket)
                 print("Error:", e)
         elif CanMotorController.can_socket_declared:
             pass
@@ -352,7 +350,7 @@ class CanMotorController():
         v_des_rad = math.radians(v_des_deg)
 
         motor_status = self.send_rad_command(p_des_rad, v_des_rad, kp, kd, tau_ff)
-        if motor_status !=None:
+        if motor_status != None:
             can_id, can_dlc, motorStatusData = motor_status
             rawMotorData = self.decode_motor_status(motorStatusData)
 

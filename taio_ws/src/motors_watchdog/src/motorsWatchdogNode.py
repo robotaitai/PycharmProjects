@@ -5,7 +5,7 @@ import rospy, yaml, rospkg
 from std_msgs.msg import String, Header
 from sensor_msgs.msg import JointState
 
-JOINT_PARAMS_PATH = "/home/taio/PycharmProjects/taio_ws/src/motors_watchdog/parameters/joint_params"
+JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/src/parameters/joint_params"
 verbose = True
 
 pub_error = rospy.Publisher("/soma/watchdog_error", String, queue_size=10)
@@ -62,9 +62,9 @@ def init_can_watchdog(joint_params):
     #TODO take care of default config and error in the yaml
 
     for joint in parsed_joint_params:
-        print("starting new topic for: /soma/" + joint)
-        pub = rospy.Publisher("/soma/"+joint+"/limited", JointState, queue_size=10)
-        rospy.Subscriber('/soma/' + joint, JointState, msg_validator, [parsed_joint_params[joint],pub])
+        print("starting new topic for: /happiness/" + joint)
+        pub = rospy.Publisher("/happiness/"+joint+"/limited", JointState, queue_size=10)
+        rospy.Subscriber('/happiness/' + joint, JointState, msg_validator, [parsed_joint_params[joint],pub])
     rospy.spin()
 
 

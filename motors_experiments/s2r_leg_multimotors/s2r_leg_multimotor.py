@@ -7,10 +7,10 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import yaml, json
-from taio_ws.src.motors_abstraction.src import canMotorController as mot_con
+import canMotorController as mot_con
 import motor_watchdog as new_mot
 import Jetson.GPIO as GPIO
-
+from collections import defaultdict
 import csv, sched
 
 '''
@@ -29,7 +29,7 @@ STEP_VALUE = 0.025
 MOTORS PARAMS
 """
 kp = KP_VALUE = 150
-kd = KD_VALUE = 0.1
+kd = KD_VALUE = 1.0
 
 # kp = KP_VALUE = float(file_params[2][2:])
 # kd = KD_VALUE = float(file_params[3][2:])
@@ -121,21 +121,23 @@ def main():
     time.sleep(1)
     # des_pos_array = data['dof_target']
     output_data =[]
-    log={}
+    # log={}
 
-    log['dof_pos_target'] = []
-    log['dof_vel'] = []
-    log['torque_action'] = []
-    log['real_pos']=[]
-    log['real_vel']=[]
-    log['real_torque']=[]
+    # log['dof_pos_target'] = []
+    # log['dof_vel'] = []
+    # log['torque_action'] = []
+    # log['iteration'] = []
+    # log['time_stamp'] = []
+    # log['real_pos']=[]
+    # log['real_vel']=[]
+    # log['real_torque']=[]
     # log['hh']=[]
     # log['overshooting']=[]
     # log['danger_vel']=[]
 
-    leg={}
-    for dof in dofs:
-        leg[dof]=log
+    leg = defaultdict(lambda: defaultdict(list))
+    # for dof in dofs:
+    #     leg[dof]=log
 
     for dof in dofs:
         leg[dof]['dof_pos_target'] = data[dof]['dof_pos_target'][::5]
@@ -161,6 +163,8 @@ def main():
                     leg[dof]['real_pos'].append(pos)
                     leg[dof]['real_vel'].append(vel)
                     leg[dof]['real_torque'].append(curr)
+                    leg[dof]['iteration'].append(i)
+                    leg[dof]['time_stamp'].append(time.time())
                 time.sleep(T_BTWN_MOTORS)
             # if r_motor_controller_status != None:
             #     mot_id, pos, vel, curr = r_motor_controller_status
