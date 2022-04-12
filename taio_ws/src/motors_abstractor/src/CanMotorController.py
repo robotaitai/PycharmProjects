@@ -1,7 +1,6 @@
 import can, math
 # from src.motors_abstraction.src import utils
-from utilities import utils
-import MotorsParams
+from utilities import utils, MotorsParams
 from bitstring import BitArray
 
 

@@ -5,7 +5,7 @@ import MotorsHandler
 import rospy
 
 JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/src/parameters/joint_params"
-COMM_FREQ = 40  # Hz
+COMM_FREQ = 100  # Hz
 
 
 if __name__ == '__main__':
