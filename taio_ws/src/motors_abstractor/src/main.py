@@ -1,31 +1,28 @@
-#!/usr/bin/env python3
-import time
-
-import MotorsHandler
+#!/usr/bin/env python
+import time, logging,yaml
+import motors_handler
 import rospy
 
+
+
+
 JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/src/parameters/joint_params"
-COMM_FREQ = 100  # Hz
+logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
+
+
+    logger.addHandler(logging.StreamHandler())
+    logger.info("Starting motors abstractor node")
     rospy.init_node('motors_abstractor', anonymous=True)
 
-    # rc = subprocess.call("/home/taio/PycharmProjects/taio_ws/src/motors_abstraction/src/setup_can_interfacem3n3t3.sh")
-    motors_handler = MotorsHandler.MotorsHandler(JOINT_PARAMS_PATH)
-    time.sleep(1)
+    motors_handler = motors_handler.MotorsHandler(JOINT_PARAMS_PATH)
+    time.sleep(0.1)
     motors_handler.init_motors()
     # rate = rospy.Rate(COMM_FREQ)
-    rospy.Timer(rospy.Duration(1.0  / COMM_FREQ), motors_handler.publish_all_motors)
     try:
-
-        # while not rospy.is_shutdown():
-        #     verboseprint("----------------------------------")
-        #     for joint in Joints:
-        #         joint.publish_status(joint.send_position_and_update_status_demo(joint.des_angle)) #TODO Demo
-        #         rospy.sleep(0.0001)
-        #     rate.sleep()
-        rospy.spin()
+        motors_handler.run()
     except rospy.ROSInterruptException:
-        print("EXCEPTION EXCEPTION")
+        logger.error("EXCEPTION EXCEPTION")
         pass

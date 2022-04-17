@@ -9,14 +9,9 @@ JOINT_PARAMS_PATH = "/mnt/nvme0n1p1/PycharmProjects/taio_ws/src/motors_watchdog/
 verbose = True
 
 pub_error = rospy.Publisher("/soma/watchdog_error", String, queue_size=10)
-if verbose:
-    def verboseprint(args):
-        # Print each argument separately so caller doesn't need to
-        # stuff everything to be printed into a single string
-        pub_error.publish(args)
-        print(args)
-else:
-    verboseprint = lambda *a: None      # do-nothing function
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 def msg_validator(msg, arg):
@@ -37,19 +32,19 @@ def msg_validator(msg, arg):
     max_effort = arg[0]['max_effort']
 
     if msg.position[0] < min_position:
-        verboseprint("CAN Watchdog Alert for: {} Desired Pos: {} is Lower that the min allowed: {}".format(arg[0]['name'],msg.position[0],min_position))
+        logger.warning("CAN Watchdog Alert for: {} Desired Pos: {} is Lower that the min allowed: {}".format(arg[0]['name'],msg.position[0],min_position))
         limited_msg.position[0] = min_position
 
     if msg.position[0] > max_position:
-        verboseprint("CAN Watchdog Alert for: {}  Desired Pos: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.position[0],max_position))
+        logger.warning("CAN Watchdog Alert for: {}  Desired Pos: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.position[0],max_position))
         limited_msg.position[0] = max_position
 
     if msg.velocity[0] > max_velocity:
-        verboseprint("CAN Watchdog Alert for: {}  Desired Velocity: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.velocity[0],max_velocity))
+        logger.warning("CAN Watchdog Alert for: {}  Desired Velocity: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.velocity[0],max_velocity))
         limited_msg.velocity[0] = max_velocity
 
     if msg.effort[0] > max_effort:
-        verboseprint("CAN Watchdog Alert for: {}  Desired Effort: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.effort[0],max_effort))
+        logger.warning("CAN Watchdog Alert for: {}  Desired Effort: {} is Higher that the max allowed: {}".format(arg[0]['name'],msg.effort[0],max_effort))
         limited_msg.effort[0] = max_effort
 
     publisher.publish(limited_msg)

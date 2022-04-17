@@ -1,0 +1,6 @@
+defaults:
+  - communication: 300hz
+
+
+name: taio
+bla: 20

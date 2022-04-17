@@ -1,0 +1,10 @@
+<launch>
+    <node name="joystick_sim" pkg="joystick_cmd_sim" type="joystickCmdSim.py" output="screen"/>
+     <node pkg="motors_watchdog" type="main.py" name="motors_watchdog" output="screen"/>
+<!--     <node pkg="motors_abstraction" name="motors_abstraction" type="motorAbstraction.py" output="screen"/> -->
+<!--    <node pkg="motors_abstractor" name="motors_abstractor" type="main.py" output="screen"/>-->
+
+    <!-- joy node -->
+    <node name="joystick" pkg="joy" type="joy_node"/>
+<!--   <param name="dev" type="string" value="/dev/input/js0" /> </node>-->
+</launch>
